@@ -32,13 +32,11 @@ int main()
     glfwSetCursorPosCallback(gRenderer.GetWindow(), CursorPosition);
 
     Texture textureBackground;
-    Texture textureRim;
 
     TimerMgr timerTest;
     timerTest.Start(1, 15);
 
     textureBackground.LoadFromPath("src/resources/wallpaper.jpg");
-    textureRim.LoadFromPath("src/resources/rim.png");
 
     float fDegrees = 0.0f;
     std::function<void()>callbackTest = [&]

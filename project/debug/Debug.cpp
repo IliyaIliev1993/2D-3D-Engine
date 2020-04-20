@@ -176,15 +176,20 @@ void Debug::CreateAnimAndAnimOpitions()
     if(m_bCreateAnimation)
     {
         ImGui::Begin("Animation Options", &m_bCreateAnimation);
-        ImGui::Text("Animation Path, need frame without indexing number:");
+        ImGui::Text("Animation Path:");
         ImGui::InputText("",m_cArrSymbolsAnim,m_unBuffSymbols);
 
         if(ImGui::TreeNode("Anim Settings"))
         {
-            ImGui::Text("Frame Begin, Count of Frames, FPS:");
-            ImGui::InputInt3("", m_nAnimOption);
-            // 0 - Begin, 1 - Count, 2 - FPS
-            if(m_nAnimOption[1] != 0 && m_nAnimOption[2] != 0)
+            if(m_bAnimAlreadyLoaded)
+            {
+                ImGui::Text("Frame Begin: %s", m_vecStrFiles.at(0).c_str());
+                ImGui::Text("Frames Count: %d", m_vecStrFiles.size());
+            }
+            ImGui::Text("FPS:");
+            ImGui::InputInt("FPS", &m_nAnimFPS);
+            /*FPS*/
+            if(m_nAnimFPS != 0)
             {
                 std::string sButtonName;
                 if(m_bAnimAlreadyLoaded)
@@ -208,41 +213,16 @@ void Debug::CreateAnimAndAnimOpitions()
                         }
 
                         m_vecAnimData.clear();
+                        m_vecStrFiles.clear();
                     }
 
-                    for(unsigned int i = 0; i < m_nAnimOption[1]; i++)
+                    std::string sPathToAnim = m_cArrSymbolsAnim;
+                    GetDirectoryFiles(sPathToAnim,m_vecStrFiles);
+
+                    for(unsigned int i = 0; i < m_vecStrFiles.size(); i++)
                     {
                         TextureDataDebug mData;
-                        std::string sIndex = "";
-                        if(m_nAnimOption[1] >= 100)
-                        {
-                            if(i + m_nAnimOption[0] <= 9)
-                            {
-                                sIndex = "00" + std::to_string(i + m_nAnimOption[0]);
-                            }
-                            else if(i + m_nAnimOption[0] >= 10 && i + m_nAnimOption[0] < 100)
-                            {
-                                sIndex = "0" + std::to_string(i + m_nAnimOption[0]);
-                            }
-                            else if(i + m_nAnimOption[0] >= 100)
-                            {
-                                sIndex = std::to_string(i + m_nAnimOption[0]);
-                            }
-
-                        }
-                        else if(m_nAnimOption[1] < 100)
-                        {
-                            if(i + m_nAnimOption[0] <= 9)
-                            {
-                                sIndex = "0" + std::to_string(i + m_nAnimOption[0]);
-                            }
-                            else if(i + m_nAnimOption[0] >= 10)
-                            {
-                                sIndex = std::to_string(i + m_nAnimOption[0]);
-                            }
-
-                        }
-                        std::string sPath = m_cArrSymbolsAnim + sIndex + ".png";
+                        std::string sPath = sPathToAnim + m_vecStrFiles.at(i);
 
                         if(mData.mTexture.LoadFromPath(sPath))
                         {
@@ -261,7 +241,7 @@ void Debug::CreateAnimAndAnimOpitions()
                     if(ImGui::Button("Change FPS Only"))
                     {
                         m_timerAnim.Stop();
-                        m_timerAnim.Start(1, (int)(1000 / m_nAnimOption[2]));
+                        m_timerAnim.Start(1, (int)(1000 / m_nAnimFPS));
                     }
 
                     /*Remove Animation Button*/
@@ -277,6 +257,7 @@ void Debug::CreateAnimAndAnimOpitions()
                         }
 
                         m_vecAnimData.clear();
+                        m_vecStrFiles.clear();
                         m_bAnimAlreadyLoaded = false;
                     }
                 }
@@ -298,7 +279,7 @@ void Debug::CreateAnimAndAnimOpitions()
                 {
                     if(!m_timerAnim.IsStarted())
                     {
-                        m_timerAnim.Start(1, (int)(1000 / m_nAnimOption[2]));
+                        m_timerAnim.Start(1, (int)(1000 / m_nAnimFPS));
                     }
 
                 }
@@ -437,6 +418,42 @@ void Debug::Process()
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+bool Debug::GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string> &vecStrFiles)
+{
+    DIR *dirPtr = nullptr;
+    struct dirent *direntPtr = nullptr;
+
+    if((dirPtr = opendir(sPathToDirectory.c_str())) == nullptr)
+    {
+      std::cout << "Failed to open directory: " << sPathToDirectory << std::endl;
+      return false;
+    }
+
+    while ((direntPtr = readdir(dirPtr)) != nullptr)
+    {
+      vecStrFiles.push_back(std::string(direntPtr->d_name));
+//      std::cout << "Reading File ... " << direntPtr->d_name << std::endl;
+    }
+
+    closedir(dirPtr);
+
+    for (unsigned int i = 0; i < vecStrFiles.size(); i++)
+    {
+        std::string sCurrentString = vecStrFiles.at(i);
+        std::string sStrToFound = ".png";
+        std::size_t strFound = sCurrentString.find(sStrToFound);
+        if (!(strFound != std::string::npos))
+        {
+            vecStrFiles.erase(vecStrFiles.begin() + i);
+        }
+
+    }
+
+    std::sort(vecStrFiles.begin(), vecStrFiles.end());
+
+    return true;
 }
 
 void Debug::NewFrame()

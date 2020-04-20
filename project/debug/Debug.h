@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sys/types.h>
+#include <algorithm>
+#include <dirent.h>
 #include "../texture/Texture.h"
 #include "../gl_includes/imgui/imgui.h"
 #include "../gl_includes/imgui/imgui_impl_glfw_gl3.h"
@@ -33,13 +36,14 @@ private:
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
     std::vector<TextureDataDebug>m_vecAnimData;
+    std::vector<std::string>m_vecStrFiles;
     char m_cArrSymbols[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsReload[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsAnim[m_unBuffSymbols] = {"/home/default/Animation/scatter_anim_"};
     /* 0 - Begin
      * 1 - Count
      * 2 - FPS */
-    int m_nAnimOption[3];
+    int m_nAnimFPS = 0;
     int m_unCurrFrame = 0;
     bool m_bAnimAlreadyLoaded = false;
 
@@ -51,6 +55,8 @@ private:
     void CreateAnimAndAnimOpitions();
     void WriteIntoFile();
     void TimerProcess();
+
+    bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);
 
 public:
 
