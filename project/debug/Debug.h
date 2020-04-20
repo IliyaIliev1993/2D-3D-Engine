@@ -36,12 +36,16 @@ private:
     char m_cArrSymbols[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsReload[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsAnim[m_unBuffSymbols] = {"/home/default/Animation/scatter_anim_"};
+    /* 0 - Begin
+     * 1 - Count
+     * 2 - FPS */
     int m_nAnimOption[3];
     int m_unCurrFrame = 0;
     bool m_bAnimAlreadyLoaded = false;
 
     TimerMgr m_timerAnim;
 
+    void MainWindow();
     void RadioButtonTextures();
     void CreateTextureAndTextureOptions();
     void CreateAnimAndAnimOpitions();

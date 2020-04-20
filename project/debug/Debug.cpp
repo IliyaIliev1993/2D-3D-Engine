@@ -263,9 +263,25 @@ void Debug::CreateAnimAndAnimOpitions()
                         m_timerAnim.Stop();
                         m_timerAnim.Start(1, (int)(1000 / m_nAnimOption[2]));
                     }
+
+                    /*Remove Animation Button*/
+                    if(ImGui::Button("Remove animation"))
+                    {
+                        m_timerAnim.Stop();
+                        m_unCurrFrame = 0;
+
+                        for(unsigned int i = 0; i < m_vecAnimData.size(); i++)
+                        {
+                            m_vecAnimData.at(i).mTexture.Unbind();
+                            m_vecAnimData.at(i).mTexture.DeleteTexture();
+                        }
+
+                        m_vecAnimData.clear();
+                        m_bAnimAlreadyLoaded = false;
+                    }
                 }
 
-                ImGui::Text("After Pressing the button LOAD/RELOAD, check the Loading process in console");
+                ImGui::Text("After Pressing the buttons LOAD/RELOAD/REMOVE, check the Loading process in console");
                 ImGui::Text("");
 
             }
@@ -370,13 +386,8 @@ void Debug::TimerProcess()
     m_timerAnim.Tick(callbackFrame);
 }
 
-void Debug::Process()
+void Debug::MainWindow()
 {
-
-    /*Timer Process call function*/
-    TimerProcess();
-
-    //Main Window
     ImGui::Text("Texture Debug");
     ImGui::SameLine();
     ImGui::Text("RENDERING %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -394,6 +405,16 @@ void Debug::Process()
     ImGui::SameLine();
     ImGui::Checkbox("Imgui HELP", &m_bShowImguiHelp);
     ImGui::SameLine();
+}
+
+void Debug::Process()
+{
+
+    /*Timer Process call function*/
+    TimerProcess();
+
+    /*Main Window*/
+    MainWindow();
 
     /*Write into txt file all the data*/
     WriteIntoFile();
