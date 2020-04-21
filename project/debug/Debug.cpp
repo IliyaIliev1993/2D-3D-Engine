@@ -1,6 +1,9 @@
 #include "Debug.h"
 #include "../renderer/Renderer.h"
 
+const unsigned int TIMER_ID_ANIMATION = 1;
+const unsigned int TIMER_ID_SIMULATE_ROTATION = 2;
+
 Debug::Debug()
 {
 
@@ -41,6 +44,8 @@ void Debug::RadioButtonTextures()
             g_fYCoord = m_vecTextureData.at(i).fY;
             g_fXCoordMemory = m_vecTextureData.at(i).fX;
             g_fYCoordMemory = m_vecTextureData.at(i).fY;
+            g_fAngle = m_vecTextureData.at(i).fAngle;
+            g_fScale = m_vecTextureData.at(i).fScaleFactor;
             m_vecTextureData.at(i).bSelected = !m_vecTextureData.at(i).bSelected;
         }
 
@@ -48,6 +53,8 @@ void Debug::RadioButtonTextures()
         {
             m_vecTextureData.at(i).fX = g_fXCoord;
             m_vecTextureData.at(i).fY = g_fYCoord;
+            m_vecTextureData.at(i).fAngle = g_fAngle;
+            m_vecTextureData.at(i).fScaleFactor = g_fScale;
         }
 
     }
@@ -75,6 +82,8 @@ void Debug::RadioButtonTextures()
                 g_fYCoord = m_vecAnimData.at(i).fY;
                 g_fXCoordMemory = m_vecAnimData.at(i).fX;
                 g_fYCoordMemory = m_vecAnimData.at(i).fY;
+                g_fAngle = m_vecAnimData.at(i).fAngle;
+                g_fScale = m_vecAnimData.at(i).fScaleFactor;
                 m_vecAnimData.at(i).bSelected = !m_vecAnimData.at(i).bSelected;
             }
         }
@@ -85,6 +94,8 @@ void Debug::RadioButtonTextures()
             {
                 m_vecAnimData.at(i).fX = g_fXCoord;
                 m_vecAnimData.at(i).fY = g_fYCoord;
+                m_vecAnimData.at(i).fAngle = g_fAngle;
+                m_vecAnimData.at(i).fScaleFactor = g_fScale;
             }
         }
     }
@@ -246,7 +257,7 @@ void Debug::CreateAnimAndAnimOpitions()
                     if(ImGui::Button("Change FPS Only"))
                     {
                         m_timerAnim.Stop();
-                        m_timerAnim.Start(1, (int)(1000 / m_nAnimFPS));
+                        m_timerAnim.Start(TIMER_ID_ANIMATION, (int)(1000 / m_nAnimFPS));
                     }
 
                     /*Remove Animation Button*/
@@ -284,7 +295,7 @@ void Debug::CreateAnimAndAnimOpitions()
                 {
                     if(!m_timerAnim.IsStarted())
                     {
-                        m_timerAnim.Start(1, (int)(1000 / m_nAnimFPS));
+                        m_timerAnim.Start(TIMER_ID_ANIMATION, (int)(1000 / m_nAnimFPS));
                     }
 
                 }
@@ -374,6 +385,24 @@ void Debug::EnableDisableDrag()
     }
 }
 
+void Debug::SimulateRotation()
+{
+    if(!m_bSimulateRotation)
+    {
+        if(m_timerRotation.IsStarted())
+        {
+            m_timerRotation.Stop();
+        }
+
+        return;
+    }
+
+    if(!m_timerRotation.IsStarted())
+    {
+        m_timerRotation.Start(TIMER_ID_SIMULATE_ROTATION, 16);
+    }
+}
+
 void Debug::TimerProcess()
 {
     std::function<void()>callbackFrame = [&]
@@ -391,7 +420,21 @@ void Debug::TimerProcess()
 
     };
 
+    std::function<void()>callbackRotation = [&]
+    {
+        g_fAngle += m_fSpeedRotation;
+        if(g_fAngle > 360.0f)
+        {
+            g_fAngle = 0.0f;
+        }
+        else if(g_fAngle < 0.0f)
+        {
+            g_fAngle = 360.0f;
+        }
+    };
+
     m_timerAnim.Tick(callbackFrame);
+    m_timerRotation.Tick(callbackRotation);
 }
 
 void Debug::MainWindow()
@@ -403,8 +446,13 @@ void Debug::MainWindow()
     ImGui::Text("Resolution: %d x %d", gRenderer.SCREEN_WIDTH, gRenderer.SCREEN_HEIGHT);
     ImGui::SliderFloat("X Coords", &g_fXCoord, 0.0f, (float)gRenderer.SCREEN_WIDTH);
     ImGui::SliderFloat("Y Coords", &g_fYCoord, 0.0f, (float)gRenderer.SCREEN_HEIGHT);
+    ImGui::SliderFloat("Angle Degrees", &g_fAngle, 0.0f, 360.0f);
+    ImGui::SliderFloat("Scale Factor", &g_fScale, 0.0f, 1.0f);
+    ImGui::Text("");
     ImGui::InputFloat("X Precision", &g_fXCoord, 1.0f);
     ImGui::InputFloat("Y Precision", &g_fYCoord, 1.0f);
+    ImGui::InputFloat("Angle Precision", &g_fAngle, 0.1f);
+    ImGui::InputFloat("Scale Precision", &g_fScale, 0.01f);
     ImGui::ColorEdit4("Texture color", (float*)&m_vec4Color);
 
     ImGui::Checkbox("Texture Options", &m_bCreateTexture);
@@ -413,6 +461,31 @@ void Debug::MainWindow()
     ImGui::SameLine();
     ImGui::Checkbox("Imgui HELP", &m_bShowImguiHelp);
     ImGui::SameLine();
+}
+
+void Debug::SimulateRotationLabel()
+{
+    ImGui::SameLine();
+    ImGui::Checkbox("Simulate Rotation", &m_bSimulateRotation);
+    if(m_bSimulateRotation)
+    {
+        const float fSpeedIncrement = 0.2f;
+        ImGui::SameLine();
+        ImGui::Text("   Speed: %f", m_fSpeedRotation);
+        ImGui::SameLine();
+        if(ImGui::Button("-"))
+        {
+            m_fSpeedRotation -= fSpeedIncrement;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("+"))
+        {
+            m_fSpeedRotation += fSpeedIncrement;
+        }
+    }
+
+    /*Simulate Rotation*/
+    SimulateRotation();
 }
 
 void Debug::Process()
@@ -429,6 +502,9 @@ void Debug::Process()
 
     /*Enable Disable Drag function*/
     EnableDisableDrag();
+
+    /*Simulate Rotation function*/
+    SimulateRotationLabel();
 
     /*Selectable Radio Button Textures*/
     RadioButtonTextures();

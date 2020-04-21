@@ -48,6 +48,9 @@ public:
 
     /*3D*/
     void DrawPicture3D(Texture& texture, Shader& shaderTexture, glm::mat4& matrixModel, glm::mat4& matrixView);
+
+    /*Debug Draw*/
+    void DrawPictureDebug(Texture &texture, float fX, float fY, float fScaleFactor, float fDegrees, float fVertPivotFromCenter, Shader &shaderTexture);
 };
 
 extern Renderer gRenderer;

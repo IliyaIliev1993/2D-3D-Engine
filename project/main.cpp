@@ -73,10 +73,14 @@ int main()
             {
                 gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
             }
-            gRenderer.DrawPicture(objects.mTexture,
-                                 objects.fX,
-                                 objects.fY,
-                                 shaderTexture);
+
+            gRenderer.DrawPictureDebug(objects.mTexture,
+                                       objects.fX,
+                                       objects.fY,
+                                       objects.fScaleFactor,
+                                       objects.fAngle,
+                                       0.0f,
+                                       shaderTexture);
         }
 
         gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
@@ -85,10 +89,13 @@ int main()
         if(!gDebug.GetVecAnimData().empty())
         {
             unsigned int nFrame = gDebug.GetCurrFrameIndex();
-            gRenderer.DrawPicture(gDebug.GetVecAnimData().at(nFrame).mTexture,
-                                 gDebug.GetVecAnimData().at(nFrame).fX,
-                                 gDebug.GetVecAnimData().at(nFrame).fY,
-                                 shaderTexture);
+            gRenderer.DrawPictureDebug(gDebug.GetVecAnimData().at(nFrame).mTexture,
+                                       gDebug.GetVecAnimData().at(nFrame).fX,
+                                       gDebug.GetVecAnimData().at(nFrame).fY,
+                                       gDebug.GetVecAnimData().at(nFrame).fScaleFactor,
+                                       gDebug.GetVecAnimData().at(nFrame).fAngle,
+                                       0.0f,
+                                       shaderTexture);
 
         }
 

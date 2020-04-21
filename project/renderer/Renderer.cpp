@@ -12,7 +12,7 @@ bool Renderer::InitSystem()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "OPENGL", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Scene Creator", NULL, NULL);
 
     if(window == nullptr)
     {
@@ -277,6 +277,44 @@ void Renderer::DrawPictureAroundPoint(Texture &texture, float fX, float fY, floa
                                             0.0f));
     model = glm::scale(model, glm::vec3((float)texture.GetWidth() / (float)SCREEN_WIDTH,
                                         (float)texture.GetHeight() / (float)SCREEN_HEIGHT
+                                        , 0.0f));
+
+    /*Transformations of Projection, in this case is Orthographic projection*/
+    projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, -1.0f, 1.0f);
+
+    /*The current matrix projeciton will be pushed in the vertex shader*/
+    projectionToPush = projection * view * model;
+
+    shaderTexture.setMat4("uProjection", projectionToPush);
+    shaderTexture.setVec4("vColor", m_vColor);
+
+    /*Current draw call*/
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Renderer::DrawPictureDebug(Texture &texture, float fX, float fY, float fScaleFactor, float fDegrees, float fVertPivotFromCenter, Shader &shaderTexture)
+{
+    /*Bind VertexArrayObject, texture and shader to use*/
+    glBindVertexArray(VAO2D);
+    texture.Bind();
+    shaderTexture.use();
+
+    /*Create transformations*/
+    glm::mat4 model         = glm::mat4(1.0f);
+    glm::mat4 view          = glm::mat4(1.0f);
+    glm::mat4 projection    = glm::mat4(1.0f);
+    glm::mat4 projectionToPush = glm::mat4(1.0f);
+
+    /*Transformations of Model*/
+    model = glm::translate(model, glm::vec3(fX + (float)texture.GetWidth() / 2,
+                                            fY + (float)texture.GetHeight() / 2,
+                                            0.0f));
+    model = glm::rotate(model, glm::radians(fDegrees), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, glm::vec3(-((float)texture.GetWidth() / 2 - fVertPivotFromCenter),
+                                            -(float)texture.GetHeight() / 2,
+                                            0.0f));
+    model = glm::scale(model, glm::vec3(fScaleFactor * (float)texture.GetWidth() / (float)SCREEN_WIDTH,
+                                        fScaleFactor * (float)texture.GetHeight() / (float)SCREEN_HEIGHT
                                         , 0.0f));
 
     /*Transformations of Projection, in this case is Orthographic projection*/

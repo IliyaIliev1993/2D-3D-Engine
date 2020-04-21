@@ -19,6 +19,8 @@ struct TextureDataDebug
     float fX = 0.0f;
     float fY = 0.0f;
     bool bSelected = false;
+    float fAngle = 0.0f;
+    float fScaleFactor = 1.0f;
 };
 
 class Debug
@@ -27,12 +29,14 @@ class Debug
 private:
 
     static const unsigned int m_unBuffSymbols = 1024;
+
     bool m_bWriteIntoFile = false;
     bool m_bShowImguiHelp = false;
     bool m_bCreateTexture = false;
     bool m_bCreateAnimation = false;
     bool m_bReplaceCurrentTexture = false;
     bool m_bEnableDrag = false;
+    bool m_bSimulateRotation = false;
 
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
@@ -41,14 +45,14 @@ private:
     char m_cArrSymbols[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsReload[m_unBuffSymbols] = {"/home/default/"};
     char m_cArrSymbolsAnim[m_unBuffSymbols] = {"/home/default/Animation/scatter_anim_"};
-    /* 0 - Begin
-     * 1 - Count
-     * 2 - FPS */
+
     int m_nAnimFPS = 0;
     int m_unCurrFrame = 0;
     bool m_bAnimAlreadyLoaded = false;
+    float m_fSpeedRotation = 0.1f;
 
     TimerMgr m_timerAnim;
+    TimerMgr m_timerRotation;
 
     void MainWindow();
     void RadioButtonTextures();
@@ -56,6 +60,8 @@ private:
     void CreateAnimAndAnimOpitions();
     void WriteIntoFile();
     void EnableDisableDrag();
+    void SimulateRotation();
+    void SimulateRotationLabel();
     void TimerProcess();
 
     bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);
@@ -75,6 +81,9 @@ public:
     float g_fYCoord = 0.0f;
     float g_fXCoordMemory = 0.0f;
     float g_fYCoordMemory = 0.0f;
+
+    float g_fAngle = 0.0f;
+    float g_fScale = 0.0f;
 
 };
 extern Debug gDebug;
