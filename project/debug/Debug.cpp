@@ -375,19 +375,18 @@ void Debug::EnableDisableShader()
 
     ImGui::Begin("Shaders", &m_bShaders);
 
-    const unsigned int unSizeOfArrShaders = 4;
-    const char* strArrListOfShaders[unSizeOfArrShaders] = {"NONE", "Wave", "Lense", "Blur"};
+    const unsigned int unSizeOfArrShaders = 2;
+    const char* strArrListOfShaders[unSizeOfArrShaders] = {"NONE", "Wave"};
 
     ImGui::ListBox("List of Shaders", &m_nCurrShader, strArrListOfShaders, unSizeOfArrShaders);
 
     if(ImGui::Button("Apply..."))
     {
-        std::string strShaderToApply = strArrListOfShaders[m_nCurrShader];
         for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
         {
             if(m_vecTextureData.at(i).bSelected)
             {
-                m_vecTextureData.at(i).strShader = strShaderToApply;
+                m_vecTextureData.at(i).unShaderID = m_nCurrShader;
             }
         }
     }

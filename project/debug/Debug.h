@@ -21,7 +21,7 @@ struct TextureDataDebug
     bool bSelected = false;
     float fAngle = 0.0f;
     float fScaleFactor = 1.0f;
-    std::string strShader = "";
+    unsigned int unShaderID = 0;
 };
 
 class Debug

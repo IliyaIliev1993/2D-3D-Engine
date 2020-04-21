@@ -16,7 +16,6 @@ void CursorPosition(GLFWwindow* window, double xPos, double yPos)
     gHandleEvent.CursorInput(window, (float)xPos, (float)yPos);
 }
 
-float testTime = 0.0f;
 int main()
 {
     gRenderer.InitSystem();
@@ -24,9 +23,13 @@ int main()
     gRenderer.CreateAndFill3DBuffers();
     gDebug.Init();
 
+    /* Check Debug.cpp:EnableDisableShader() to add more Shaders
+       Currently - "NONE", "Wave" */
     Shader shaderTexture("src/shaders/vertex_2D.vs", "src/shaders/fragment_2D.fs");
     Shader shaderTexture3D("src/shaders/vertex_3D.vs", "src/shaders/fragment_3D.fs");
     Shader shaderWave("src/shaders/vertex_wave.vs", "src/shaders/fragment_wave.fs");
+
+    std::vector<Shader>vecShaders = {shaderTexture, shaderWave};
 
     /*Resize Window*/
 //    glfwSetFramebufferSizeCallback(gRenderer.GetWindow(), framebuffer_size_callback);
@@ -65,7 +68,6 @@ int main()
         gRenderer.DrawPicture(textureBackground, 0.0f, 0.0f, shaderTexture);
 
         /*Textures from Debug*/
-        Shader shaderToUse = shaderTexture;
         for(auto& objects : gDebug.GetVecTextureData())
         {
             if(objects.bSelected)
@@ -78,38 +80,20 @@ int main()
             }
 
             /* Check Debug.cpp:EnableDisableShader() to add more Shaders
-               Currently - "NONE", "Wave", "Lense", "Blur" */
-
-            if(objects.strShader == "NONE")
-            {
-                shaderToUse = shaderTexture;
-            }
-            else if(objects.strShader == "Wave")
-            {
-                shaderToUse = shaderWave;
-            }
-            else if(objects.strShader == "Lense")
-            {
-                /*More to add*/
-                shaderToUse = shaderTexture;
-            }
-            else if(objects.strShader == "Blur")
-            {
-                /*More to add*/
-                shaderToUse = shaderTexture;
-            }
-
+               Currently - "NONE", "Wave"*/
             gRenderer.DrawPictureDebug(objects.mTexture,
                                        objects.fX,
                                        objects.fY,
                                        objects.fScaleFactor,
                                        objects.fAngle,
                                        0.0f,
-                                       shaderToUse);
+                                       vecShaders.at(objects.unShaderID));
+            /*Wave Needs Time*/
+            if(objects.unShaderID == 1)
+            {
+                vecShaders.at(objects.unShaderID).setFloat("fTime", (float)glfwGetTime());
+            }
         }
-
-        shaderWave.setFloat("fTime", testTime);
-        testTime+= 0.1f;
 
         gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
 
@@ -123,7 +107,7 @@ int main()
                                        gDebug.GetVecAnimData().at(nFrame).fScaleFactor,
                                        gDebug.GetVecAnimData().at(nFrame).fAngle,
                                        0.0f,
-                                       shaderToUse);
+                                       shaderTexture);
 
         }
 
