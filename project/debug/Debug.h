@@ -32,6 +32,7 @@ private:
     bool m_bCreateTexture = false;
     bool m_bCreateAnimation = false;
     bool m_bReplaceCurrentTexture = false;
+    bool m_bEnableDrag = false;
 
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
@@ -54,6 +55,7 @@ private:
     void CreateTextureAndTextureOptions();
     void CreateAnimAndAnimOpitions();
     void WriteIntoFile();
+    void EnableDisableDrag();
     void TimerProcess();
 
     bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);
@@ -71,6 +73,8 @@ public:
 
     float g_fXCoord = 0.0f;
     float g_fYCoord = 0.0f;
+    float g_fXCoordMemory = 0.0f;
+    float g_fYCoordMemory = 0.0f;
 
 };
 extern Debug gDebug;

@@ -39,6 +39,8 @@ void Debug::RadioButtonTextures()
         {
             g_fXCoord = m_vecTextureData.at(i).fX;
             g_fYCoord = m_vecTextureData.at(i).fY;
+            g_fXCoordMemory = m_vecTextureData.at(i).fX;
+            g_fYCoordMemory = m_vecTextureData.at(i).fY;
             m_vecTextureData.at(i).bSelected = !m_vecTextureData.at(i).bSelected;
         }
 
@@ -71,6 +73,8 @@ void Debug::RadioButtonTextures()
             {
                 g_fXCoord = m_vecAnimData.at(i).fX;
                 g_fYCoord = m_vecAnimData.at(i).fY;
+                g_fXCoordMemory = m_vecAnimData.at(i).fX;
+                g_fYCoordMemory = m_vecAnimData.at(i).fY;
                 m_vecAnimData.at(i).bSelected = !m_vecAnimData.at(i).bSelected;
             }
         }
@@ -184,6 +188,7 @@ void Debug::CreateAnimAndAnimOpitions()
             if(m_bAnimAlreadyLoaded)
             {
                 ImGui::Text("Frame Begin: %s", m_vecStrFiles.at(0).c_str());
+                ImGui::Text("Frame End: %s", m_vecStrFiles.at(m_vecStrFiles.size() - 1).c_str());
                 ImGui::Text("Frames Count: %d", m_vecStrFiles.size());
             }
             ImGui::Text("FPS:");
@@ -347,6 +352,28 @@ void Debug::WriteIntoFile()
     }
 }
 
+void Debug::EnableDisableDrag()
+{
+    ImGui::Checkbox("Enable Drag", &m_bEnableDrag);
+
+    if(!m_bEnableDrag)
+    {
+        return;
+    }
+
+    /* 0 - Mouse Left, 1 - Mouse Right */
+    if(ImGui::IsMouseDown(0))
+    {
+        g_fXCoord = ImGui::GetMouseDragDelta(0).x + g_fXCoordMemory;
+        g_fYCoord = ImGui::GetMouseDragDelta(0).y + g_fYCoordMemory;
+    }
+    else if(ImGui::IsMouseReleased(0))
+    {
+        g_fXCoordMemory = g_fXCoord;
+        g_fYCoordMemory = g_fYCoord;
+    }
+}
+
 void Debug::TimerProcess()
 {
     std::function<void()>callbackFrame = [&]
@@ -399,6 +426,9 @@ void Debug::Process()
 
     /*Write into txt file all the data*/
     WriteIntoFile();
+
+    /*Enable Disable Drag function*/
+    EnableDisableDrag();
 
     /*Selectable Radio Button Textures*/
     RadioButtonTextures();
