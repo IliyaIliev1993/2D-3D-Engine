@@ -21,6 +21,7 @@ struct TextureDataDebug
     bool bSelected = false;
     float fAngle = 0.0f;
     float fScaleFactor = 1.0f;
+    std::string strShader = "";
 };
 
 class Debug
@@ -37,6 +38,7 @@ private:
     bool m_bReplaceCurrentTexture = false;
     bool m_bEnableDrag = false;
     bool m_bSimulateRotation = false;
+    bool m_bShaders = false;
 
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
@@ -48,8 +50,10 @@ private:
 
     int m_nAnimFPS = 0;
     int m_unCurrFrame = 0;
+    int m_nCurrShader = 0;
     bool m_bAnimAlreadyLoaded = false;
     float m_fSpeedRotation = 0.1f;
+    float m_fMemoryUsage = 0.0f;
 
     TimerMgr m_timerAnim;
     TimerMgr m_timerRotation;
@@ -62,6 +66,8 @@ private:
     void EnableDisableDrag();
     void SimulateRotation();
     void SimulateRotationLabel();
+    void CalculateMemoryOfPNG();
+    void EnableDisableShader();
     void TimerProcess();
 
     bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);

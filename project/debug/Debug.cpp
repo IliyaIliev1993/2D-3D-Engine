@@ -363,6 +363,38 @@ void Debug::WriteIntoFile()
     }
 }
 
+void Debug::EnableDisableShader()
+{
+    ImGui::SameLine();
+    ImGui::Checkbox("Shaders", &m_bShaders);
+
+    if(!m_bShaders)
+    {
+        return;
+    }
+
+    ImGui::Begin("Shaders", &m_bShaders);
+
+    const unsigned int unSizeOfArrShaders = 4;
+    const char* strArrListOfShaders[unSizeOfArrShaders] = {"NONE", "Wave", "Lense", "Blur"};
+
+    ImGui::ListBox("List of Shaders", &m_nCurrShader, strArrListOfShaders, unSizeOfArrShaders);
+
+    if(ImGui::Button("Apply..."))
+    {
+        std::string strShaderToApply = strArrListOfShaders[m_nCurrShader];
+        for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+        {
+            if(m_vecTextureData.at(i).bSelected)
+            {
+                m_vecTextureData.at(i).strShader = strShaderToApply;
+            }
+        }
+    }
+    ImGui::End();
+
+}
+
 void Debug::EnableDisableDrag()
 {
     ImGui::Checkbox("Enable Drag", &m_bEnableDrag);
@@ -437,13 +469,32 @@ void Debug::TimerProcess()
     m_timerRotation.Tick(callbackRotation);
 }
 
+void Debug::CalculateMemoryOfPNG()
+{
+    float fCurrCalc = 0.0f;
+    for(auto& objects : m_vecTextureData)
+    {
+        fCurrCalc += (objects.mTexture.GetWidth() * objects.mTexture.GetHeight()) * 4;
+
+    }
+
+    for(auto& objects : m_vecAnimData)
+    {
+        fCurrCalc += (objects.mTexture.GetWidth() * objects.mTexture.GetHeight()) * 4;
+    }
+
+    m_fMemoryUsage = fCurrCalc / 1000000;
+}
+
 void Debug::MainWindow()
 {
     ImGui::Text("Texture Debug");
     ImGui::SameLine();
     ImGui::Text("RENDERING %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::SameLine();
-    ImGui::Text("Resolution: %d x %d", gRenderer.SCREEN_WIDTH, gRenderer.SCREEN_HEIGHT);
+    ImGui::Text(", Resolution: %d x %d", gRenderer.SCREEN_WIDTH, gRenderer.SCREEN_HEIGHT);
+    ImGui::SameLine();
+    ImGui::Text(", Memory Usage of PNG's : %f MB", m_fMemoryUsage);
     ImGui::SliderFloat("X Coords", &g_fXCoord, 0.0f, (float)gRenderer.SCREEN_WIDTH);
     ImGui::SliderFloat("Y Coords", &g_fYCoord, 0.0f, (float)gRenderer.SCREEN_HEIGHT);
     ImGui::SliderFloat("Angle Degrees", &g_fAngle, 0.0f, 360.0f);
@@ -454,13 +505,12 @@ void Debug::MainWindow()
     ImGui::InputFloat("Angle Precision", &g_fAngle, 0.1f);
     ImGui::InputFloat("Scale Precision", &g_fScale, 0.01f);
     ImGui::ColorEdit4("Texture color", (float*)&m_vec4Color);
-
+    ImGui::Text("");
     ImGui::Checkbox("Texture Options", &m_bCreateTexture);
     ImGui::SameLine();
     ImGui::Checkbox("Animation Options", &m_bCreateAnimation);
     ImGui::SameLine();
     ImGui::Checkbox("Imgui HELP", &m_bShowImguiHelp);
-    ImGui::SameLine();
 }
 
 void Debug::SimulateRotationLabel()
@@ -494,17 +544,20 @@ void Debug::Process()
     /*Timer Process call function*/
     TimerProcess();
 
-    /*Main Window*/
-    MainWindow();
-
     /*Write into txt file all the data*/
     WriteIntoFile();
+
+    /*Main Window*/
+    MainWindow();
 
     /*Enable Disable Drag function*/
     EnableDisableDrag();
 
     /*Simulate Rotation function*/
     SimulateRotationLabel();
+
+    /*Shaders Menu*/
+    EnableDisableShader();
 
     /*Selectable Radio Button Textures*/
     RadioButtonTextures();
@@ -521,6 +574,9 @@ void Debug::Process()
 
     //Create Animations
     CreateAnimAndAnimOpitions();
+
+    /*PNG Memory usage*/
+    CalculateMemoryOfPNG();
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());

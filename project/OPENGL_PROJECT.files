@@ -1,5 +1,7 @@
 exe
 main.cpp
+src/shaders/fragment_wave.fs
+src/shaders/vertex_wave.vs
 timer_mgr/TimerMgr.hpp
 debug/Debug.cpp
 debug/Debug.h
