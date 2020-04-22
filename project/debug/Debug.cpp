@@ -20,6 +20,15 @@ bool Debug::Init()
 
 bool Debug::DragFromOutside(int nPathCount, const char *strPaths[])
 {
+    if(m_bCreateAnimation)
+    {
+        std::string sPath = *strPaths;
+        sPath.append("/");
+        std::strcpy(m_cArrSymbolsAnim, sPath.c_str());
+
+        return true;
+    }
+
     TextureDataDebug dataToPush;
     for(int i = 0; i < nPathCount; i++)
     {
@@ -32,6 +41,8 @@ bool Debug::DragFromOutside(int nPathCount, const char *strPaths[])
             continue;
         }
     }
+
+    return true;
 }
 
 void Debug::RadioButtonTextures()
@@ -208,7 +219,7 @@ void Debug::CreateAnimAndAnimOpitions()
     if(m_bCreateAnimation)
     {
         ImGui::Begin("Animation Options", &m_bCreateAnimation);
-        ImGui::Text("Animation Path:");
+        ImGui::Text("Insert Animation path or Drag Here the folder:");
         ImGui::InputText("",m_cArrSymbolsAnim,m_unBuffSymbols);
 
         if(ImGui::TreeNode("Anim Settings"))
