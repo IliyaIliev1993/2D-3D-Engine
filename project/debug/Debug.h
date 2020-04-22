@@ -54,6 +54,7 @@ private:
     bool m_bAnimAlreadyLoaded = false;
     float m_fSpeedRotation = 0.1f;
     float m_fMemoryUsage = 0.0f;
+    bool m_bIsMouseDoubleClicked = false;
 
     TimerMgr m_timerAnim;
     TimerMgr m_timerRotation;
@@ -68,6 +69,7 @@ private:
     void SimulateRotationLabel();
     void CalculateMemoryOfPNG();
     void EnableDisableShader();
+    void DoubleClickAndSelect();
     void TimerProcess();
 
     bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);
@@ -79,6 +81,7 @@ public:
     void Process();
     void Destroy();
     void NewFrame();
+    bool DragFromOutside(int nPathCount, const char* strPaths[]);
     inline std::vector<TextureDataDebug>& GetVecTextureData() {return m_vecTextureData;}
     inline std::vector<TextureDataDebug>& GetVecAnimData() {return m_vecAnimData;}
     inline int& GetCurrFrameIndex() {return m_unCurrFrame;}

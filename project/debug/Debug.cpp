@@ -18,6 +18,22 @@ bool Debug::Init()
     return true;
 }
 
+bool Debug::DragFromOutside(int nPathCount, const char *strPaths[])
+{
+    TextureDataDebug dataToPush;
+    for(int i = 0; i < nPathCount; i++)
+    {
+        if(dataToPush.mTexture.LoadFromPath(strPaths[i]))
+        {
+            m_vecTextureData.emplace_back(dataToPush);
+        }
+        else
+        {
+            continue;
+        }
+    }
+}
+
 void Debug::RadioButtonTextures()
 {
     ImGui::Text("");
@@ -37,6 +53,7 @@ void Debug::RadioButtonTextures()
                 " - " +
                 "Y: " +
                 std::to_string((int)m_vecTextureData.at(i).fY);
+
         if(ImGui::RadioButton(strPath.c_str(),
                               m_vecTextureData.at(i).bSelected))
         {
@@ -561,6 +578,9 @@ void Debug::Process()
     /*Selectable Radio Button Textures*/
     RadioButtonTextures();
 
+    /*Select with double click*//*TODO*/
+    //DoubleClickAndSelect();
+
     //Help IMGUI
     if (m_bShowImguiHelp)
     {
@@ -579,6 +599,92 @@ void Debug::Process()
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Debug::DoubleClickAndSelect()
+{
+    int xMouse = ImGui::GetMousePos().x;
+    int yMouse = ImGui::GetMousePos().y;
+
+    for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+    {
+        bool bInCoords = (xMouse >= m_vecTextureData.at(i).fX) &&
+                         (xMouse <= m_vecTextureData.at(i).fX + m_vecTextureData.at(i).mTexture.GetWidth()) &&
+                         (yMouse >= m_vecTextureData.at(i).fY) &&
+                         (yMouse <= m_vecTextureData.at(i).fY + m_vecTextureData.at(i).mTexture.GetHeight());
+
+        if(ImGui::IsMouseClicked(0) && bInCoords)
+        {
+            g_fXCoord = m_vecTextureData.at(i).fX;
+            g_fYCoord = m_vecTextureData.at(i).fY;
+            g_fXCoordMemory = m_vecTextureData.at(i).fX;
+            g_fYCoordMemory = m_vecTextureData.at(i).fY;
+            g_fAngle = m_vecTextureData.at(i).fAngle;
+            g_fScale = m_vecTextureData.at(i).fScaleFactor;
+        }
+
+        if(ImGui::IsMouseDoubleClicked(0))
+        {
+            m_bIsMouseDoubleClicked = true;
+            if(bInCoords)
+            {
+                m_vecTextureData.at(i).fX = g_fXCoord;
+                m_vecTextureData.at(i).fY = g_fYCoord;
+                m_vecTextureData.at(i).bSelected = true;
+            }
+        }
+
+    }
+
+    if(ImGui::IsMouseReleased(0) && m_bIsMouseDoubleClicked)
+    {
+        m_bIsMouseDoubleClicked = false;
+        for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+        {
+            m_vecTextureData.at(i).bSelected = false;
+        }
+
+    }
+    /*Left Button Mouse*/
+//    if(ImGui::IsMouseClicked(0) && bInCoords)
+//    {
+//        for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+//        {
+//            g_fXCoord = m_vecTextureData.at(i).fX;
+//            g_fYCoord = m_vecTextureData.at(i).fY;
+//            g_fXCoordMemory = m_vecTextureData.at(i).fX;
+//            g_fYCoordMemory = m_vecTextureData.at(i).fY;
+//            g_fAngle = m_vecTextureData.at(i).fAngle;
+//            g_fScale = m_vecTextureData.at(i).fScaleFactor;
+//        }
+
+//    }
+//    if(ImGui::IsMouseDoubleClicked(0))
+//    {
+//        m_bIsMouseDoubleClicked = true;
+//        for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+//        {
+//            bool bInCoords = (xMouse >= m_vecTextureData.at(i).fX) &&
+//                             (xMouse <= m_vecTextureData.at(i).fX + m_vecTextureData.at(i).mTexture.GetWidth()) &&
+//                             (yMouse >= m_vecTextureData.at(i).fY) &&
+//                             (yMouse <= m_vecTextureData.at(i).fY + m_vecTextureData.at(i).mTexture.GetHeight());
+//            if(bInCoords)
+//            {
+//                m_vecTextureData.at(i).fX = g_fXCoord;
+//                m_vecTextureData.at(i).fY = g_fYCoord;
+//                m_vecTextureData.at(i).bSelected = true;
+//                break;
+//            }
+//        }
+//    }
+//    else if(ImGui::IsMouseReleased(0) && m_bIsMouseDoubleClicked)
+//    {
+//        m_bIsMouseDoubleClicked = false;
+//        for(auto& objects : m_vecTextureData)
+//        {
+//            objects.bSelected = false;
+//        }
+//    }
 }
 
 bool Debug::GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string> &vecStrFiles)

@@ -16,6 +16,11 @@ void CursorPosition(GLFWwindow* window, double xPos, double yPos)
     gHandleEvent.CursorInput(window, (float)xPos, (float)yPos);
 }
 
+void drop_callback(GLFWwindow* window, int nPathCount, const char* strPaths[])
+{
+    gDebug.DragFromOutside(nPathCount, strPaths);
+}
+
 int main()
 {
     gRenderer.InitSystem();
@@ -51,6 +56,9 @@ int main()
 
     while(!glfwWindowShouldClose(gRenderer.GetWindow()))
     {
+        /*Called when dragged and dropped from outside window*/
+        glfwSetDropCallback(gRenderer.GetWindow(), drop_callback);
+
         /*Debug New frame calculation*/
         gDebug.NewFrame();
 
