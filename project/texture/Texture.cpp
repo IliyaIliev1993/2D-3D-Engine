@@ -36,6 +36,9 @@ bool Texture::LoadFromPath(std::string sPath)
         return false;
     }
 
+    g_nDynamicSourceW = m_nWidth;
+    g_nDynamicSourceH = m_nHeight;
+
     stbi_image_free(dataTexture);
 
     return true;

@@ -539,6 +539,77 @@ void Debug::MainWindow()
     ImGui::Checkbox("Imgui HELP", &m_bShowImguiHelp);
 }
 
+void Debug::TextureAndRectModify()
+{
+    if(m_bEnable3D)
+    {
+        return;
+    }
+    const float fRectToFit = 350.0f;
+    const float fWidthVertSliders = 20.0f;
+    const float fOffsetHorizontalSliders = 5.0f;
+    const float fPosClipX = 53.0f + ImGui::GetWindowPos().x;
+    const float fPosClipY = 474.0f + ImGui::GetWindowPos().y;
+    float fResizeValue = 1.0f;
+    for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+    {
+        if(m_vecTextureData.at(i).bSelected)
+        {
+            if(m_vecTextureData.at(i).mTexture.GetWidth() > fRectToFit ||
+               m_vecTextureData.at(i).mTexture.GetHeight() > fRectToFit)
+            {
+                fResizeValue = 3.0f;
+            }
+
+            ImGui::NewLine();
+            ImGui::Text("Selected: ");
+            const float fWidth = (m_vecTextureData.at(i).mTexture.GetWidth() / fResizeValue);
+            const float fHeight = (m_vecTextureData.at(i).mTexture.GetHeight() / fResizeValue);
+            /*Fix of problem with STBI_LOAD flipped*/
+            glm::vec2 vecFlippedMinUV = glm::vec2(0.0f, 1.0f);
+            glm::vec2 vecFlippedMaxUV = glm::vec2(1.0f, 0.0f);
+
+            ImGui::PushItemWidth(fWidth);
+            ImGui::NewLine();
+            ImGui::SameLine();
+            ImGui::Dummy({(fWidthVertSliders/2) + fOffsetHorizontalSliders, 0.0f});
+            ImGui::SameLine();
+            ImGui::Text(" ");
+            ImGui::SameLine();
+            ImGui::SliderInt("X", &m_vecTextureData.at(i).mTexture.g_nDynamicSourceX, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
+            ImGui::NewLine();
+            ImGui::VSliderInt(" Y", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).mTexture.g_nDynamicSourceY, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
+            ImGui::SameLine();
+
+            const float fCurrentPosClipX = fPosClipX + m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue;
+            const float fCurrentPosClipY = fPosClipY + m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue;
+            const float fCurrentPosClipW = (fPosClipX + fWidth) - ((m_vecTextureData.at(i).mTexture.GetWidth() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceW) / fResizeValue);
+            const float fCurrentPosClipH = (fPosClipY + fHeight) - ((m_vecTextureData.at(i).mTexture.GetHeight() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceH) / fResizeValue);
+
+            ImGui::PushClipRect({fCurrentPosClipX, fCurrentPosClipY}, {fCurrentPosClipW, fCurrentPosClipH}, true);
+            ImGui::Image(ImTextureID((intptr_t)m_vecTextureData.at(i).mTexture.GetTexture()),
+                                      {fWidth, fHeight},
+                                      {vecFlippedMinUV.x, vecFlippedMinUV.y},
+                                      {vecFlippedMaxUV.x, vecFlippedMaxUV.y});
+            ImGui::PopClipRect();
+
+            ImGui::SameLine();
+            ImGui::Text("H");
+            ImGui::SameLine();
+            ImGui::VSliderInt("", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).mTexture.g_nDynamicSourceH, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
+            ImGui::NewLine();
+            ImGui::NewLine();
+            ImGui::SameLine();
+            ImGui::Dummy({(fWidthVertSliders/2) + fOffsetHorizontalSliders, 0.0f});
+            ImGui::SameLine();
+            ImGui::Text(" ");
+            ImGui::SameLine();
+            ImGui::SliderInt("W", &m_vecTextureData.at(i).mTexture.g_nDynamicSourceW, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
+            break;
+        }
+    }
+}
+
 void Debug::SimulateRotationLabel()
 {
     ImGui::Checkbox("Simulate Rotation", &m_bSimulateRotation);
@@ -608,6 +679,9 @@ void Debug::Process()
 
     /*Shaders Menu*/
     EnableDisableShader();
+
+    /*Small Window texture preview*/
+    TextureAndRectModify();
 
     /*Selectable Radio Button Textures*/
     RadioButtonTextures();

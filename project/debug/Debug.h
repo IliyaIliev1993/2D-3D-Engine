@@ -63,6 +63,7 @@ private:
     TimerMgr m_timerRotation;
 
     void MainWindow();
+    void TextureAndRectModify();
     void RadioButtonTextures();
     void CreateTextureAndTextureOptions();
     void CreateAnimAndAnimOpitions();

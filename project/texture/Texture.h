@@ -5,6 +5,9 @@
 #include <string>
 #include "../gl_includes/glad/glad.h"
 #include <GLFW/glfw3.h>
+#include "../gl_includes/glm/glm/glm.hpp"
+#include "../gl_includes/glm/glm/gtc/matrix_transform.hpp"
+#include "../gl_includes/glm/glm/gtc/type_ptr.hpp"
 
 class Texture
 {
@@ -26,6 +29,13 @@ public:
     void Bind();
     void Unbind();
     void DeleteTexture();
+
+    glm::vec2 g_vecMinUV = glm::vec2(0.0f, 0.0f);
+    glm::vec2 g_vecMaxUV = glm::vec2(1.0f, 1.0f);
+    int g_nDynamicSourceX = 0;
+    int g_nDynamicSourceY = 0;
+    int g_nDynamicSourceW = 0;
+    int g_nDynamicSourceH = 0;
 
 };
 
