@@ -39,6 +39,7 @@ private:
     bool m_bEnableDrag = false;
     bool m_bSimulateRotation = false;
     bool m_bShaders = false;
+    bool m_bEnable3D = false;
 
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
@@ -52,6 +53,9 @@ private:
     int m_unCurrFrame = 0;
     int m_nCurrShader = 0;
     bool m_bAnimAlreadyLoaded = false;
+    bool m_bRotateAroundAxisX = false;
+    bool m_bRotateAroundAxisY = false;
+    bool m_bRotateAroundAxisZ = true;
     float m_fSpeedRotation = 0.1f;
     float m_fMemoryUsage = 0.0f;
 
@@ -84,9 +88,14 @@ public:
     inline std::vector<TextureDataDebug>& GetVecTextureData() {return m_vecTextureData;}
     inline std::vector<TextureDataDebug>& GetVecAnimData() {return m_vecAnimData;}
     inline int& GetCurrFrameIndex() {return m_unCurrFrame;}
+    inline bool& GetRotateAroundX() {return m_bRotateAroundAxisX;}
+    inline bool& GetRotateAroundY() {return m_bRotateAroundAxisY;}
+    inline bool& GetRotateAroundZ() {return m_bRotateAroundAxisZ;}
+    inline bool& GetEnable3D() {return m_bEnable3D;}
 
     float g_fXCoord = 0.0f;
     float g_fYCoord = 0.0f;
+    float g_fZCoord = gRenderer.SCREEN_DEPTH;
     float g_fXCoordMemory = 0.0f;
     float g_fYCoordMemory = 0.0f;
 

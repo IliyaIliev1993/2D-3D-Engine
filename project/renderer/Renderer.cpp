@@ -71,6 +71,45 @@ void Renderer::CreateAndFill2DBuffers()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    /*** DEBUG BUFFERS ***/
+    float fVertices2DDebug[] =
+    {
+        m_vec2TopLeft.x, m_vec2TopLeft.y,        /*Texture Top Left*/ 0.0f, 1.0f,
+        m_vec2TopRight.x, m_vec2TopRight.y,      /*Texture Top Right*/ 1.0f, 1.0f,
+        m_vec2BottomRight.x, m_vec2BottomRight.y,/*Texture Bottom Right*/ 1.0f, 0.0f,
+        m_vec2BottomLeft.x, m_vec2BottomLeft.y,  /*Texture Bottom Left*/ 0.0f, 0.0f,
+    };
+
+    unsigned int unIndicesDebug[] =
+    {
+        0, 1, 3, /*First Triangle*/
+        1, 2, 3  /*Second Triangle*/
+    };
+
+    /*Creates the VertexArrayObject, VertexBufferObject, ElementBufferObject*/
+    glGenVertexArrays(1, &VAO2DDebug);
+    glGenBuffers(1, &VBO2DDebug);
+    glGenBuffers(1, &EBO2DDebug);
+
+    /*Bind current VAO to push all the datas*/
+    glBindVertexArray(VAO2DDebug);
+
+    /*Fill VBO*/
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2DDebug);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(fVertices2DDebug), fVertices2DDebug, GL_DYNAMIC_DRAW);
+
+    /*Fill EBO*/
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2DDebug);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unIndicesDebug), unIndicesDebug, GL_DYNAMIC_DRAW);
+
+    /*Set Position Attributes*/
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    /*Set Texture Attributes*/
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
     /*Enable Blending*/
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -292,10 +331,30 @@ void Renderer::DrawPictureAroundPoint(Texture &texture, float fX, float fY, floa
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void Renderer::DrawPictureDebug(Texture &texture, float fX, float fY, float fScaleFactor, float fDegrees, float fVertPivotFromCenter, Shader &shaderTexture)
+void Renderer::DrawPictureDebug(Texture &texture,
+                                float fX,
+                                float fY,
+                                float fScaleFactor,
+                                float fDegrees,
+                                float fVertPivotFromCenter,
+                                bool bRotateAroundX,
+                                bool bRotateAroundY,
+                                bool bRotateAroundZ,
+                                Shader &shaderTexture)
 {
+
     /*Bind VertexArrayObject, texture and shader to use*/
-    glBindVertexArray(VAO2D);
+    float fVertices2DDebug[] =
+    {
+        m_vec2TopLeft.x, m_vec2TopLeft.y,        /*Texture Top Left*/ 0.0f, 1.0f,
+        m_vec2TopRight.x, m_vec2TopRight.y,      /*Texture Top Right*/ 1.0f, 1.0f,
+        m_vec2BottomRight.x, m_vec2BottomRight.y,/*Texture Bottom Right*/ 1.0f, 0.0f,
+        m_vec2BottomLeft.x, m_vec2BottomLeft.y,  /*Texture Bottom Left*/ 0.0f, 0.0f,
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2DDebug);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(fVertices2DDebug), fVertices2DDebug, GL_DYNAMIC_DRAW);
+    glBindVertexArray(VAO2DDebug);
     texture.Bind();
     shaderTexture.use();
 
@@ -309,7 +368,7 @@ void Renderer::DrawPictureDebug(Texture &texture, float fX, float fY, float fSca
     model = glm::translate(model, glm::vec3(fX + (float)texture.GetWidth() / 2,
                                             fY + (float)texture.GetHeight() / 2,
                                             0.0f));
-    model = glm::rotate(model, glm::radians(fDegrees), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(fDegrees), glm::vec3((float)bRotateAroundX, (float)bRotateAroundY, (float)bRotateAroundZ));
     model = glm::translate(model, glm::vec3(-((float)texture.GetWidth() / 2 - fVertPivotFromCenter),
                                             -(float)texture.GetHeight() / 2,
                                             0.0f));
@@ -328,6 +387,14 @@ void Renderer::DrawPictureDebug(Texture &texture, float fX, float fY, float fSca
 
     /*Current draw call*/
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Renderer::SendVertsToVBODebug(glm::vec2 vec2TopLeft, glm::vec2 vec2TopRight, glm::vec2 vec2BottomRight, glm::vec2 vec2BottomLeft)
+{
+    m_vec2TopLeft = vec2TopLeft;
+    m_vec2TopRight = vec2TopRight;
+    m_vec2BottomRight = vec2BottomRight;
+    m_vec2BottomLeft = vec2BottomLeft;
 }
 
 void Renderer::CallEventsAndSwapBuffers()

@@ -75,6 +75,7 @@ int main()
         gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
         gRenderer.DrawPicture(textureBackground, 0.0f, 0.0f, shaderTexture);
 
+        gRenderer.SendVertsToVBODebug(/*{300.0f, 0.0f}*/);
         /*Textures from Debug*/
         for(auto& objects : gDebug.GetVecTextureData())
         {
@@ -89,12 +90,35 @@ int main()
 
             /* Check Debug.cpp:EnableDisableShader() to add more Shaders
                Currently - "NONE", "Wave"*/
+            if(gDebug.GetEnable3D())
+            {
+                float fXNormalized = ((2 * objects.fX) / gRenderer.SCREEN_WIDTH) - 1;
+                float fYNormalized = ((2 * objects.fY) / gRenderer.SCREEN_WIDTH) - 1;
+                float fZNormalized = ((2 * gDebug.g_fZCoord) / (gRenderer.SCREEN_DEPTH)) - 1;
+                fYNormalized = -1 * fYNormalized;
+
+                glm::mat4 view = glm::mat4(1.0f);
+                glm::mat4 model = glm::mat4(1.0f);
+
+                model = glm::translate(model, glm::vec3(fXNormalized, fYNormalized, fZNormalized));
+                model = glm::rotate(model, glm::radians(objects.fAngle * -1), glm::vec3((float)gDebug.GetRotateAroundX(),
+                                                                                        (float)gDebug.GetRotateAroundY(),
+                                                                                        (float)gDebug.GetRotateAroundZ()));
+                view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+                gRenderer.DrawPicture3D(objects.mTexture, shaderTexture3D, model, view);
+
+                continue;
+            }
+
             gRenderer.DrawPictureDebug(objects.mTexture,
                                        objects.fX,
                                        objects.fY,
                                        objects.fScaleFactor,
                                        objects.fAngle,
                                        0.0f,
+                                       gDebug.GetRotateAroundX(),
+                                       gDebug.GetRotateAroundY(),
+                                       gDebug.GetRotateAroundZ(),
                                        vecShaders.at(objects.unShaderID));
             /*Wave Needs Time*/
             if(objects.unShaderID == 1)
@@ -115,6 +139,9 @@ int main()
                                        gDebug.GetVecAnimData().at(nFrame).fScaleFactor,
                                        gDebug.GetVecAnimData().at(nFrame).fAngle,
                                        0.0f,
+                                       gDebug.GetRotateAroundX(),
+                                       gDebug.GetRotateAroundY(),
+                                       gDebug.GetRotateAroundZ(),
                                        shaderTexture);
 
         }

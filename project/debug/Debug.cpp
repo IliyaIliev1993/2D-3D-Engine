@@ -393,7 +393,6 @@ void Debug::WriteIntoFile()
 
 void Debug::EnableDisableShader()
 {
-    ImGui::SameLine();
     ImGui::Checkbox("Shaders", &m_bShaders);
 
     if(!m_bShaders)
@@ -542,11 +541,35 @@ void Debug::MainWindow()
 
 void Debug::SimulateRotationLabel()
 {
-    ImGui::SameLine();
     ImGui::Checkbox("Simulate Rotation", &m_bSimulateRotation);
+    ImGui::SameLine();
+    ImGui::Checkbox("Enable 3D", &m_bEnable3D);
+    if(m_bEnable3D)
+    {
+        ImGui::SameLine();
+        ImGui::Checkbox("Rotate arond X Axis", &m_bRotateAroundAxisX);
+        ImGui::SameLine();
+        ImGui::Checkbox("Rotate arond Y Axis", &m_bRotateAroundAxisY);
+        ImGui::SameLine();
+        ImGui::Checkbox("Rotate around Z Axis", &m_bRotateAroundAxisZ);
+        ImGui::SliderFloat("Z Coords", &g_fZCoord, -(float)gRenderer.SCREEN_DEPTH * 5, (float)gRenderer.SCREEN_DEPTH * 2);
+    }
+    else
+    {
+        m_bRotateAroundAxisX = false;
+        m_bRotateAroundAxisY = false;
+        ImGui::SameLine();
+        ImGui::Checkbox("Rotate around Z Axis", &m_bRotateAroundAxisZ);
+    }
+
+    if(!m_bRotateAroundAxisX && !m_bRotateAroundAxisY)
+    {
+        m_bRotateAroundAxisZ = true;
+    }
+
     if(m_bSimulateRotation)
     {
-        const float fSpeedIncrement = 0.2f;
+        const float fSpeedIncrement = 0.1f;
         ImGui::SameLine();
         ImGui::Text("   Speed: %f", m_fSpeedRotation);
         ImGui::SameLine();
