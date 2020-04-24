@@ -42,6 +42,11 @@ private:
     glm::vec2 m_vec2BottomLeft = glm::vec2(0.0f, 0.0f);
     glm::vec2 m_vec2BottomRight = glm::vec2(0.0f, 0.0f);
 
+    glm::vec2 m_vec2TextCoordTopLeft = glm::vec2(0.0f, 1.0f);
+    glm::vec2 m_vec2TextCoordTopRight = glm::vec2(1.0f, 1.0f);
+    glm::vec2 m_vec2TextCoordBottomRight = glm::vec2(1.0f, 0.0f);
+    glm::vec2 m_vec2TextCoordBottomLeft = glm::vec2(0.0f, 0.0f);
+
     glm::vec4 m_vColor = glm::vec4(1.0, 1.0f, 1.0f, 1.0f);
 
 public:
@@ -62,9 +67,16 @@ public:
                              glm::vec2 vec2BottomRight = glm::vec2((float)Renderer::SCREEN_WIDTH, (float)Renderer::SCREEN_HEIGHT),
                              glm::vec2 vec2BottomLeft = glm::vec2(0.0f, (float)Renderer::SCREEN_HEIGHT));
 
+
+    void SendTextureCoordToVBODebug(glm::vec2 vec2TextCoordTopLeft = glm::vec2(0.0f, 1.0f),
+                                    glm::vec2 vec2TextCoordTopRight = glm::vec2(1.0f, 1.0f),
+                                    glm::vec2 vec2TextCoordBottomRight = glm::vec2(1.0f, 0.0f),
+                                    glm::vec2 vec2TextCoordBottomLeft = glm::vec2(0.0f, 0.0f));
+
     void SetColor(float fRed = 1.0f, float fGreen = 1.0f, float fBlue = 1.0f, float fAlpha = 1.0f);
 
     /*2D*/
+    void DrawRect(float fX, float fY, float fWidth, float fHeight, Shader& shaderRect);
     void DrawPicture(Texture& texture, float fX, float fY, Shader& shaderTexture);
     void DrawPictureScaled(Texture& texture, float fX, float fY, float fScaleFactor, Shader& shaderTexture);
     void DrawPictureRotated(Texture& texture, float fX, float fY, float fDegrees, Shader& shaderTexture);

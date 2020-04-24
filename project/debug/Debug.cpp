@@ -581,10 +581,15 @@ void Debug::TextureAndRectModify()
             ImGui::VSliderInt(" Y", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).mTexture.g_nDynamicSourceY, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
             ImGui::SameLine();
 
-            const float fCurrentPosClipX = fPosClipX + m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue;
-            const float fCurrentPosClipY = fPosClipY + m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue;
-            const float fCurrentPosClipW = (fPosClipX + fWidth) - ((m_vecTextureData.at(i).mTexture.GetWidth() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceW) / fResizeValue);
-            const float fCurrentPosClipH = (fPosClipY + fHeight) - ((m_vecTextureData.at(i).mTexture.GetHeight() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceH) / fResizeValue);
+            const float fCurrentPosClipX = fPosClipX + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue);
+
+            const float fCurrentPosClipY = fPosClipY + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue);
+
+            const float fCurrentPosClipW = (fPosClipX + fWidth + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue)) -
+                    ((m_vecTextureData.at(i).mTexture.GetWidth() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceW) / fResizeValue);
+
+            const float fCurrentPosClipH = (fPosClipY + fHeight + m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue) -
+                    ((m_vecTextureData.at(i).mTexture.GetHeight() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceH) / fResizeValue);
 
             ImGui::PushClipRect({fCurrentPosClipX, fCurrentPosClipY}, {fCurrentPosClipW, fCurrentPosClipH}, true);
             ImGui::Image(ImTextureID((intptr_t)m_vecTextureData.at(i).mTexture.GetTexture()),
@@ -607,6 +612,7 @@ void Debug::TextureAndRectModify()
             ImGui::SliderInt("W", &m_vecTextureData.at(i).mTexture.g_nDynamicSourceW, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
             break;
         }
+
     }
 }
 

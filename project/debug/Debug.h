@@ -41,6 +41,11 @@ private:
     bool m_bShaders = false;
     bool m_bEnable3D = false;
 
+    int m_nXDynamicPreviewTexture = 0;
+    int m_nYDynamicPreviewTexture = 0;
+    int m_nWDynamicPreviewTexture = 0;
+    int m_nHDynamicPreviewTexture = 0;
+
     ImVec4 m_vec4Color = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     std::vector<TextureDataDebug>m_vecTextureData;
     std::vector<TextureDataDebug>m_vecAnimData;

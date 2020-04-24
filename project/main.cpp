@@ -30,6 +30,7 @@ int main()
 
     /* Check Debug.cpp:EnableDisableShader() to add more Shaders
        Currently - "NONE", "Wave" */
+    Shader shaderRect("src/shaders/vertex_rect.vs", "src/shaders/fragment_rect.fs");
     Shader shaderTexture("src/shaders/vertex_2D.vs", "src/shaders/fragment_2D.fs");
     Shader shaderTexture3D("src/shaders/vertex_3D.vs", "src/shaders/fragment_3D.fs");
     Shader shaderWave("src/shaders/vertex_wave.vs", "src/shaders/fragment_wave.fs");
@@ -75,18 +76,13 @@ int main()
         gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
         gRenderer.DrawPicture(textureBackground, 0.0f, 0.0f, shaderTexture);
 
-        gRenderer.SendVertsToVBODebug(/*{300.0f, 0.0f}*/);
+        gRenderer.SendVertsToVBODebug();
+        gRenderer.SendTextureCoordToVBODebug();
         /*Textures from Debug*/
         for(auto& objects : gDebug.GetVecTextureData())
         {
-            if(objects.bSelected)
-            {
-                gRenderer.SetColor(1.0f,1.0f,1.0f,0.75f);
-            }
-            else
-            {
-                gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
-            }
+
+            gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
 
             /* Check Debug.cpp:EnableDisableShader() to add more Shaders
                Currently - "NONE", "Wave"*/
@@ -120,6 +116,18 @@ int main()
                                        gDebug.GetRotateAroundY(),
                                        gDebug.GetRotateAroundZ(),
                                        vecShaders.at(objects.unShaderID));
+
+            if(objects.bSelected)
+            {
+                const float fXRect = objects.fX + (float)objects.mTexture.g_nDynamicSourceX;
+                const float fYRect = objects.fY + (float)objects.mTexture.g_nDynamicSourceY;
+                const float fWRect = objects.mTexture.GetWidth() - (objects.mTexture.GetWidth() - (float)objects.mTexture.g_nDynamicSourceW);
+                const float fHRect = objects.mTexture.GetHeight() - (objects.mTexture.GetHeight() - (float)objects.mTexture.g_nDynamicSourceH);
+
+                gRenderer.SetColor(1.0f,1.0f,1.0f,0.50f);
+                gRenderer.DrawRect(fXRect, fYRect, fWRect, fHRect, shaderRect);
+            }
+
             /*Wave Needs Time*/
             if(objects.unShaderID == 1)
             {
@@ -145,8 +153,6 @@ int main()
                                        shaderTexture);
 
         }
-
-
 
         /*Debug Process and Draw*/
         gDebug.Process();

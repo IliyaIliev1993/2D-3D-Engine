@@ -7,6 +7,11 @@ Texture::Texture()
 
 }
 
+int Texture::g_nDynamicSourceX = 0;
+int Texture::g_nDynamicSourceY = 0;
+int Texture::g_nDynamicSourceW = 0;
+int Texture::g_nDynamicSourceH = 0;
+
 bool Texture::LoadFromPath(std::string sPath)
 {
     m_sCurrentPath = sPath;

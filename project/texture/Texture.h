@@ -30,12 +30,15 @@ public:
     void Unbind();
     void DeleteTexture();
 
-    glm::vec2 g_vecMinUV = glm::vec2(0.0f, 0.0f);
-    glm::vec2 g_vecMaxUV = glm::vec2(1.0f, 1.0f);
-    int g_nDynamicSourceX = 0;
-    int g_nDynamicSourceY = 0;
-    int g_nDynamicSourceW = 0;
-    int g_nDynamicSourceH = 0;
+    glm::vec2 g_vec2TextCoordTopLeft = glm::vec2(0.0f, 1.0f);
+    glm::vec2 g_vec2TextCoordTopRight = glm::vec2(1.0f, 1.0f);
+    glm::vec2 g_vec2TextCoordBottomRight = glm::vec2(1.0f, 0.0f);
+    glm::vec2 g_vec2TextCoordBottomLeft = glm::vec2(0.0f, 0.0f);
+
+    static int g_nDynamicSourceX;
+    static int g_nDynamicSourceY;
+    static int g_nDynamicSourceW;
+    static int g_nDynamicSourceH;
 
 };
 

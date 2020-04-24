@@ -165,6 +165,37 @@ void Renderer::SetColor(float fRed, float fGreen, float fBlue, float fAlpha)
     m_vColor = glm::vec4(fRed, fGreen, fBlue, fAlpha);
 }
 
+void Renderer::DrawRect(float fX, float fY, float fWidth, float fHeight, Shader &shaderRect)
+{
+    /*Bind VertexArrayObject, texture and shader to use*/
+    glBindVertexArray(VAO2D);
+    shaderRect.use();
+
+    /*Create transformations*/
+    glm::mat4 model         = glm::mat4(1.0f);
+    glm::mat4 view          = glm::mat4(1.0f);
+    glm::mat4 projection    = glm::mat4(1.0f);
+    glm::mat4 projectionToPush = glm::mat4(1.0f);
+
+    /*Transformations of Model*/
+    model = glm::translate(model, glm::vec3(fX, fY, 0.0f));
+    model = glm::scale(model, glm::vec3(fWidth / (float)SCREEN_WIDTH,
+                                        fHeight / (float)SCREEN_HEIGHT,
+                                        0.0f));
+
+    /*Transformations of Projection, in this case is Orthographic projection*/
+    projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, -1.0f, 1.0f);
+
+    /*The current matrix projeciton will be pushed in the vertex shader*/
+    projectionToPush = projection * view * model;
+
+    shaderRect.setMat4("uProjection", projectionToPush);
+    shaderRect.setVec4("vColor", m_vColor);
+
+    /*Current draw call*/
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
 void Renderer::DrawPicture(Texture &texture, float fX, float fY, Shader &shaderTexture)
 {
     /*Bind VertexArrayObject, texture and shader to use*/
@@ -346,10 +377,10 @@ void Renderer::DrawPictureDebug(Texture &texture,
     /*Bind VertexArrayObject, texture and shader to use*/
     float fVertices2DDebug[] =
     {
-        m_vec2TopLeft.x, m_vec2TopLeft.y,        /*Texture Top Left*/ 0.0f, 1.0f,
-        m_vec2TopRight.x, m_vec2TopRight.y,      /*Texture Top Right*/ 1.0f, 1.0f,
-        m_vec2BottomRight.x, m_vec2BottomRight.y,/*Texture Bottom Right*/ 1.0f, 0.0f,
-        m_vec2BottomLeft.x, m_vec2BottomLeft.y,  /*Texture Bottom Left*/ 0.0f, 0.0f,
+        m_vec2TopLeft.x, m_vec2TopLeft.y,        /*Texture Top Left*/     m_vec2TextCoordTopLeft.x, m_vec2TextCoordTopLeft.y,
+        m_vec2TopRight.x, m_vec2TopRight.y,      /*Texture Top Right*/    m_vec2TextCoordTopRight.x, m_vec2TextCoordTopRight.y,
+        m_vec2BottomRight.x, m_vec2BottomRight.y,/*Texture Bottom Right*/ m_vec2TextCoordBottomRight.x, m_vec2TextCoordBottomRight.y,
+        m_vec2BottomLeft.x, m_vec2BottomLeft.y,  /*Texture Bottom Left*/  m_vec2TextCoordBottomLeft.x, m_vec2TextCoordBottomLeft.y,
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO2DDebug);
@@ -389,12 +420,26 @@ void Renderer::DrawPictureDebug(Texture &texture,
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void Renderer::SendVertsToVBODebug(glm::vec2 vec2TopLeft, glm::vec2 vec2TopRight, glm::vec2 vec2BottomRight, glm::vec2 vec2BottomLeft)
+void Renderer::SendVertsToVBODebug(glm::vec2 vec2TopLeft,
+                                   glm::vec2 vec2TopRight,
+                                   glm::vec2 vec2BottomRight,
+                                   glm::vec2 vec2BottomLeft)
 {
     m_vec2TopLeft = vec2TopLeft;
     m_vec2TopRight = vec2TopRight;
     m_vec2BottomRight = vec2BottomRight;
     m_vec2BottomLeft = vec2BottomLeft;
+}
+
+void Renderer::SendTextureCoordToVBODebug(glm::vec2 vec2TextCoordTopLeft,
+                                          glm::vec2 vec2TextCoordTopRight,
+                                          glm::vec2 vec2TextCoordBottomRight,
+                                          glm::vec2 vec2TextCoordBottomLeft)
+{
+    m_vec2TextCoordTopLeft = vec2TextCoordTopLeft;
+    m_vec2TextCoordTopRight = vec2TextCoordTopRight;
+    m_vec2TextCoordBottomRight = vec2TextCoordBottomRight;
+    m_vec2TextCoordBottomLeft = vec2TextCoordBottomLeft;
 }
 
 void Renderer::CallEventsAndSwapBuffers()
