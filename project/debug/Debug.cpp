@@ -1,5 +1,4 @@
 #include "Debug.h"
-#include "../renderer/Renderer.h"
 
 const unsigned int TIMER_ID_ANIMATION = 1;
 const unsigned int TIMER_ID_SIMULATE_ROTATION = 2;
@@ -14,6 +13,13 @@ bool Debug::Init()
     ImGui::CreateContext();
     ImGui_ImplGlfwGL3_Init(gRenderer.GetWindow(), true);
     ImGui::StyleColorsDark();
+
+    shaderRect = Shader("src/shaders/vertex_rect.vs", "src/shaders/fragment_rect.fs");
+    shaderTexture = Shader("src/shaders/vertex_2D.vs", "src/shaders/fragment_2D.fs");
+    shaderTexture3D = Shader("src/shaders/vertex_3D.vs", "src/shaders/fragment_3D.fs");
+    shaderWave = Shader("src/shaders/vertex_wave.vs", "src/shaders/fragment_wave.fs");
+
+    m_vecShaders = {shaderTexture, shaderWave};
 
     return true;
 }
@@ -75,6 +81,10 @@ void Debug::RadioButtonTextures()
             g_fAngle = m_vecTextureData.at(i).fAngle;
             g_fScale = m_vecTextureData.at(i).fScaleFactor;
             m_vecTextureData.at(i).bSelected = !m_vecTextureData.at(i).bSelected;
+            m_vecTextureData.at(i).nDynamicSourceX = m_vecTextureData.at(i).mTexture.GetSourceX();
+            m_vecTextureData.at(i).nDynamicSourceY = m_vecTextureData.at(i).mTexture.GetSourceY();
+            m_vecTextureData.at(i).nDynamicSourceW = m_vecTextureData.at(i).mTexture.GetSourceW();
+            m_vecTextureData.at(i).nDynamicSourceH = m_vecTextureData.at(i).mTexture.GetSourceH();
         }
 
         if(m_vecTextureData.at(i).bSelected)
@@ -367,15 +377,18 @@ void Debug::WriteIntoFile()
 
         for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
         {
+
             sData += "\t<Image key=\"IMAGE_ID_" + std::to_string(i + 1) + "\"" +
                      " fileName=\"" + m_vecTextureData.at(i).mTexture.GetPath() + "\"" +
-                     " x=\"0\" y=\"0\" width=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetWidth()) + "\"" +
-                     " height=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetHeight()) + "\"" +
+                     " x=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetSourceX()) + "\"" +
+                     " y=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetSourceY()) + "\"" +
+                     " width=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetSourceW()) + "\"" +
+                     " height=" + "\"" + std::to_string(m_vecTextureData.at(i).mTexture.GetSourceH()) + "\"" +
                      " priority=\"200\"/>\n";
 
         }
         sData += "</game_rss_list>\n";
-        sData += "DEST: \n";
+        sData += "DESTINATIONS: \n";
 
         for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
         {
@@ -423,7 +436,7 @@ void Debug::EnableDisableShader()
 
 void Debug::EnableDisableDrag()
 {
-    ImGui::Checkbox("Enable Drag", &m_bEnableDrag);
+    ImGui::Checkbox("Enable Dragging", &m_bEnableDrag);
 
     if(!m_bEnableDrag)
     {
@@ -441,6 +454,12 @@ void Debug::EnableDisableDrag()
         g_fXCoordMemory = g_fXCoord;
         g_fYCoordMemory = g_fYCoord;
     }
+}
+
+void Debug::EnableDisableImageCut()
+{
+    ImGui::SameLine();
+    ImGui::Checkbox("Enable Image Cut", &m_bEnableCut);
 }
 
 void Debug::SimulateRotation()
@@ -541,7 +560,7 @@ void Debug::MainWindow()
 
 void Debug::TextureAndRectModify()
 {
-    if(m_bEnable3D)
+    if(m_bEnable3D || !m_bEnableCut)
     {
         return;
     }
@@ -576,20 +595,20 @@ void Debug::TextureAndRectModify()
             ImGui::SameLine();
             ImGui::Text(" ");
             ImGui::SameLine();
-            ImGui::SliderInt("X", &m_vecTextureData.at(i).mTexture.g_nDynamicSourceX, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
+            ImGui::SliderInt("X", &m_vecTextureData.at(i).nDynamicSourceX, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
             ImGui::NewLine();
-            ImGui::VSliderInt(" Y", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).mTexture.g_nDynamicSourceY, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
+            ImGui::VSliderInt(" Y", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).nDynamicSourceY, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
             ImGui::SameLine();
 
-            const float fCurrentPosClipX = fPosClipX + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue);
+            const float fCurrentPosClipX = fPosClipX + (m_vecTextureData.at(i).nDynamicSourceX / fResizeValue);
 
-            const float fCurrentPosClipY = fPosClipY + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue);
+            const float fCurrentPosClipY = fPosClipY + (m_vecTextureData.at(i).nDynamicSourceY / fResizeValue);
 
-            const float fCurrentPosClipW = (fPosClipX + fWidth + (m_vecTextureData.at(i).mTexture.g_nDynamicSourceX / fResizeValue)) -
-                    ((m_vecTextureData.at(i).mTexture.GetWidth() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceW) / fResizeValue);
+            const float fCurrentPosClipW = (fPosClipX + fWidth + (m_vecTextureData.at(i).nDynamicSourceX / fResizeValue)) -
+                    ((m_vecTextureData.at(i).mTexture.GetWidth() - m_vecTextureData.at(i).nDynamicSourceW) / fResizeValue);
 
-            const float fCurrentPosClipH = (fPosClipY + fHeight + m_vecTextureData.at(i).mTexture.g_nDynamicSourceY / fResizeValue) -
-                    ((m_vecTextureData.at(i).mTexture.GetHeight() - m_vecTextureData.at(i).mTexture.g_nDynamicSourceH) / fResizeValue);
+            const float fCurrentPosClipH = (fPosClipY + fHeight + m_vecTextureData.at(i).nDynamicSourceY / fResizeValue) -
+                    ((m_vecTextureData.at(i).mTexture.GetHeight() - m_vecTextureData.at(i).nDynamicSourceH) / fResizeValue);
 
             ImGui::PushClipRect({fCurrentPosClipX, fCurrentPosClipY}, {fCurrentPosClipW, fCurrentPosClipH}, true);
             ImGui::Image(ImTextureID((intptr_t)m_vecTextureData.at(i).mTexture.GetTexture()),
@@ -601,7 +620,7 @@ void Debug::TextureAndRectModify()
             ImGui::SameLine();
             ImGui::Text("H");
             ImGui::SameLine();
-            ImGui::VSliderInt("", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).mTexture.g_nDynamicSourceH, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
+            ImGui::VSliderInt("", {fWidthVertSliders, fHeight}, &m_vecTextureData.at(i).nDynamicSourceH, m_vecTextureData.at(i).mTexture.GetHeight(), 0.0f);
             ImGui::NewLine();
             ImGui::NewLine();
             ImGui::SameLine();
@@ -609,10 +628,31 @@ void Debug::TextureAndRectModify()
             ImGui::SameLine();
             ImGui::Text(" ");
             ImGui::SameLine();
-            ImGui::SliderInt("W", &m_vecTextureData.at(i).mTexture.g_nDynamicSourceW, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
+            ImGui::SliderInt("W", &m_vecTextureData.at(i).nDynamicSourceW, 0.0f, m_vecTextureData.at(i).mTexture.GetWidth());
+
+            ImGui::Text("Previous values: X: %d Y: %d W: %d H: %d",
+                        m_vecTextureData.at(i).mTexture.GetSourceX(),
+                        m_vecTextureData.at(i).mTexture.GetSourceY(),
+                        m_vecTextureData.at(i).mTexture.GetSourceW(),
+                        m_vecTextureData.at(i).mTexture.GetSourceH());
             break;
         }
 
+    }
+
+    if(ImGui::Button("Apply Changes..."))
+    {
+        for(unsigned int i = 0; i < m_vecTextureData.size(); i++)
+        {
+            if(m_vecTextureData.at(i).bSelected)
+            {
+                m_vecTextureData.at(i).mTexture.SetSourceX(m_vecTextureData.at(i).nDynamicSourceX);
+                m_vecTextureData.at(i).mTexture.SetSourceY(m_vecTextureData.at(i).nDynamicSourceY);
+                m_vecTextureData.at(i).mTexture.SetSourceW(m_vecTextureData.at(i).nDynamicSourceW);
+                m_vecTextureData.at(i).mTexture.SetSourceH(m_vecTextureData.at(i).nDynamicSourceH);
+                break;
+            }
+        }
     }
 }
 
@@ -667,6 +707,8 @@ void Debug::SimulateRotationLabel()
 
 void Debug::Process()
 {
+    /*Draw Textures and Animations*/
+    Draw();
 
     /*Timer Process call function*/
     TimerProcess();
@@ -679,6 +721,9 @@ void Debug::Process()
 
     /*Enable Disable Drag function*/
     EnableDisableDrag();
+
+    /*Enable Disable Image Cut function*/
+    EnableDisableImageCut();
 
     /*Simulate Rotation function*/
     SimulateRotationLabel();
@@ -737,6 +782,10 @@ void Debug::RightClickAndSelect()
             g_fAngle = m_vecTextureData.at(i).fAngle;
             g_fScale = m_vecTextureData.at(i).fScaleFactor;
             m_vecTextureData.at(i).bSelected = !m_vecTextureData.at(i).bSelected;
+            m_vecTextureData.at(i).nDynamicSourceX = m_vecTextureData.at(i).mTexture.GetSourceX();
+            m_vecTextureData.at(i).nDynamicSourceY = m_vecTextureData.at(i).mTexture.GetSourceY();
+            m_vecTextureData.at(i).nDynamicSourceW = m_vecTextureData.at(i).mTexture.GetSourceW();
+            m_vecTextureData.at(i).nDynamicSourceH = m_vecTextureData.at(i).mTexture.GetSourceH();
             break;
         }
 
@@ -777,6 +826,96 @@ bool Debug::GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::str
     std::sort(vecStrFiles.begin(), vecStrFiles.end());
 
     return true;
+}
+
+void Debug::Draw()
+{
+    gRenderer.SendVertsToVBODebug();
+    gRenderer.SendTextureCoordToVBODebug();
+    /*Textures from Debug*/
+    for(auto& objects : m_vecTextureData)
+    {
+
+        if(objects.bSelected)
+        {
+            gRenderer.SetColor(1.0f,1.0f,1.0f,0.7f);
+        }
+        else
+        {
+            gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
+        }
+
+
+        /* Check Debug.cpp:EnableDisableShader() to add more Shaders
+           Currently - "NONE", "Wave"*/
+        if(gDebug.GetEnable3D())
+        {
+            float fXNormalized = ((2 * objects.fX) / gRenderer.SCREEN_WIDTH) - 1;
+            float fYNormalized = ((2 * objects.fY) / gRenderer.SCREEN_WIDTH) - 1;
+            float fZNormalized = ((2 * gDebug.g_fZCoord) / (gRenderer.SCREEN_DEPTH)) - 1;
+            fYNormalized = -1 * fYNormalized;
+
+            glm::mat4 view = glm::mat4(1.0f);
+            glm::mat4 model = glm::mat4(1.0f);
+
+            model = glm::translate(model, glm::vec3(fXNormalized, fYNormalized, fZNormalized));
+            model = glm::rotate(model, glm::radians(objects.fAngle * -1), glm::vec3((float)m_bRotateAroundAxisX,
+                                                                                    (float)m_bRotateAroundAxisY,
+                                                                                    (float)m_bRotateAroundAxisZ));
+            view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+            gRenderer.DrawPicture3D(objects.mTexture, shaderTexture3D, model, view);
+
+            continue;
+        }
+
+        gRenderer.DrawPictureDebug(objects.mTexture,
+                                   objects.fX,
+                                   objects.fY,
+                                   objects.fScaleFactor,
+                                   objects.fAngle,
+                                   0.0f,
+                                   m_bRotateAroundAxisX,
+                                   m_bRotateAroundAxisY,
+                                   m_bRotateAroundAxisZ,
+                                   m_vecShaders.at(objects.unShaderID));
+
+        if(objects.bSelected && m_bEnableCut)
+        {
+            const float fXRect = objects.fX + (float)objects.nDynamicSourceX;
+            const float fYRect = objects.fY + (float)objects.nDynamicSourceY;
+            const float fWRect = objects.mTexture.GetWidth() - (objects.mTexture.GetWidth() - (float)objects.nDynamicSourceW);
+            const float fHRect = objects.mTexture.GetHeight() - (objects.mTexture.GetHeight() - (float)objects.nDynamicSourceH);
+
+            gRenderer.SetColor(1.0f,1.0f,1.0f,0.7f);
+            gRenderer.DrawRect(fXRect, fYRect, fWRect, fHRect, shaderRect);
+        }
+
+        /*Wave Needs Time*/
+        if(objects.unShaderID == 1)
+        {
+            m_vecShaders.at(objects.unShaderID).setFloat("fTime", (float)glfwGetTime());
+        }
+    }
+
+    gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
+
+    /*Animations from Debug*/
+    if(!m_vecAnimData.empty())
+    {
+        unsigned int nFrame = gDebug.GetCurrFrameIndex();
+        gRenderer.DrawPictureDebug(m_vecAnimData.at(nFrame).mTexture,
+                                   m_vecAnimData.at(nFrame).fX,
+                                   m_vecAnimData.at(nFrame).fY,
+                                   m_vecAnimData.at(nFrame).fScaleFactor,
+                                   m_vecAnimData.at(nFrame).fAngle,
+                                   0.0f,
+                                   m_bRotateAroundAxisX,
+                                   m_bRotateAroundAxisY,
+                                   m_bRotateAroundAxisZ,
+                                   shaderTexture);
+
+    }
+
 }
 
 void Debug::NewFrame()

@@ -35,8 +35,6 @@ int main()
     Shader shaderTexture3D("src/shaders/vertex_3D.vs", "src/shaders/fragment_3D.fs");
     Shader shaderWave("src/shaders/vertex_wave.vs", "src/shaders/fragment_wave.fs");
 
-    std::vector<Shader>vecShaders = {shaderTexture, shaderWave};
-
     /*Resize Window*/
 //    glfwSetFramebufferSizeCallback(gRenderer.GetWindow(), framebuffer_size_callback);
     /*Mouse Control*/
@@ -75,84 +73,6 @@ int main()
 
         gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
         gRenderer.DrawPicture(textureBackground, 0.0f, 0.0f, shaderTexture);
-
-        gRenderer.SendVertsToVBODebug();
-        gRenderer.SendTextureCoordToVBODebug();
-        /*Textures from Debug*/
-        for(auto& objects : gDebug.GetVecTextureData())
-        {
-
-            gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
-
-            /* Check Debug.cpp:EnableDisableShader() to add more Shaders
-               Currently - "NONE", "Wave"*/
-            if(gDebug.GetEnable3D())
-            {
-                float fXNormalized = ((2 * objects.fX) / gRenderer.SCREEN_WIDTH) - 1;
-                float fYNormalized = ((2 * objects.fY) / gRenderer.SCREEN_WIDTH) - 1;
-                float fZNormalized = ((2 * gDebug.g_fZCoord) / (gRenderer.SCREEN_DEPTH)) - 1;
-                fYNormalized = -1 * fYNormalized;
-
-                glm::mat4 view = glm::mat4(1.0f);
-                glm::mat4 model = glm::mat4(1.0f);
-
-                model = glm::translate(model, glm::vec3(fXNormalized, fYNormalized, fZNormalized));
-                model = glm::rotate(model, glm::radians(objects.fAngle * -1), glm::vec3((float)gDebug.GetRotateAroundX(),
-                                                                                        (float)gDebug.GetRotateAroundY(),
-                                                                                        (float)gDebug.GetRotateAroundZ()));
-                view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-                gRenderer.DrawPicture3D(objects.mTexture, shaderTexture3D, model, view);
-
-                continue;
-            }
-
-            gRenderer.DrawPictureDebug(objects.mTexture,
-                                       objects.fX,
-                                       objects.fY,
-                                       objects.fScaleFactor,
-                                       objects.fAngle,
-                                       0.0f,
-                                       gDebug.GetRotateAroundX(),
-                                       gDebug.GetRotateAroundY(),
-                                       gDebug.GetRotateAroundZ(),
-                                       vecShaders.at(objects.unShaderID));
-
-            if(objects.bSelected)
-            {
-                const float fXRect = objects.fX + (float)objects.mTexture.g_nDynamicSourceX;
-                const float fYRect = objects.fY + (float)objects.mTexture.g_nDynamicSourceY;
-                const float fWRect = objects.mTexture.GetWidth() - (objects.mTexture.GetWidth() - (float)objects.mTexture.g_nDynamicSourceW);
-                const float fHRect = objects.mTexture.GetHeight() - (objects.mTexture.GetHeight() - (float)objects.mTexture.g_nDynamicSourceH);
-
-                gRenderer.SetColor(1.0f,1.0f,1.0f,0.50f);
-                gRenderer.DrawRect(fXRect, fYRect, fWRect, fHRect, shaderRect);
-            }
-
-            /*Wave Needs Time*/
-            if(objects.unShaderID == 1)
-            {
-                vecShaders.at(objects.unShaderID).setFloat("fTime", (float)glfwGetTime());
-            }
-        }
-
-        gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
-
-        /*Animations from Debug*/
-        if(!gDebug.GetVecAnimData().empty())
-        {
-            unsigned int nFrame = gDebug.GetCurrFrameIndex();
-            gRenderer.DrawPictureDebug(gDebug.GetVecAnimData().at(nFrame).mTexture,
-                                       gDebug.GetVecAnimData().at(nFrame).fX,
-                                       gDebug.GetVecAnimData().at(nFrame).fY,
-                                       gDebug.GetVecAnimData().at(nFrame).fScaleFactor,
-                                       gDebug.GetVecAnimData().at(nFrame).fAngle,
-                                       0.0f,
-                                       gDebug.GetRotateAroundX(),
-                                       gDebug.GetRotateAroundY(),
-                                       gDebug.GetRotateAroundZ(),
-                                       shaderTexture);
-
-        }
 
         /*Debug Process and Draw*/
         gDebug.Process();

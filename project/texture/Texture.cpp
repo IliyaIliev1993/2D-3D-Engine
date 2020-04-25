@@ -7,11 +7,6 @@ Texture::Texture()
 
 }
 
-int Texture::g_nDynamicSourceX = 0;
-int Texture::g_nDynamicSourceY = 0;
-int Texture::g_nDynamicSourceW = 0;
-int Texture::g_nDynamicSourceH = 0;
-
 bool Texture::LoadFromPath(std::string sPath)
 {
     m_sCurrentPath = sPath;
@@ -41,8 +36,8 @@ bool Texture::LoadFromPath(std::string sPath)
         return false;
     }
 
-    g_nDynamicSourceW = m_nWidth;
-    g_nDynamicSourceH = m_nHeight;
+    m_nSourceW = m_nWidth;
+    m_nSourceH = m_nHeight;
 
     stbi_image_free(dataTexture);
 
