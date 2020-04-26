@@ -1,7 +1,13 @@
 exe
 main.cpp
+src/shaders/fragment_clip.fs
+src/shaders/fragment_crop.fs
+src/shaders/fragment_lens.fs
 src/shaders/fragment_rect.fs
 src/shaders/fragment_wave.fs
+src/shaders/vertex_clip.vs
+src/shaders/vertex_crop.vs
+src/shaders/vertex_lens.vs
 src/shaders/vertex_rect.vs
 src/shaders/vertex_wave.vs
 timer_mgr/TimerMgr.hpp

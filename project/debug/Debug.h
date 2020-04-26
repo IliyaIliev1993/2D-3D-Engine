@@ -14,6 +14,15 @@
 #include "../timer_mgr/TimerMgr.hpp"
 #include "../renderer/Renderer.h"
 
+enum Shaders
+{
+    eShaderTexture,
+    eShaderWave,
+    eShaderClip,
+    eShaderCrop,
+    eShaderLens
+};
+
 struct TextureDataDebug
 {
     Texture mTexture;
@@ -40,6 +49,11 @@ private:
     Shader shaderTexture;
     Shader shaderTexture3D;
     Shader shaderWave;
+    Shader shaderClip;
+    Shader shaderCrop;
+    Shader shaderLens;
+
+    glm::vec4 m_vec4ClipCrop = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
     bool m_bWriteIntoFile = false;
     bool m_bShowImguiHelp = false;
@@ -89,6 +103,7 @@ private:
     void RightClickAndSelect();
     void TimerProcess();
     void Draw();
+    void CurrentShaderEffect(unsigned int nShaderToApply);
 
     bool GetDirectoryFiles(std::string sPathToDirectory, std::vector<std::string>& vecStrFiles);
 

@@ -18,8 +18,11 @@ bool Debug::Init()
     shaderTexture = Shader("src/shaders/vertex_2D.vs", "src/shaders/fragment_2D.fs");
     shaderTexture3D = Shader("src/shaders/vertex_3D.vs", "src/shaders/fragment_3D.fs");
     shaderWave = Shader("src/shaders/vertex_wave.vs", "src/shaders/fragment_wave.fs");
+    shaderClip = Shader("src/shaders/vertex_clip.vs", "src/shaders/fragment_clip.fs");
+    shaderCrop = Shader("src/shaders/vertex_crop.vs", "src/shaders/fragment_crop.fs");
+    shaderLens = Shader("src/shaders/vertex_lens.vs", "src/shaders/fragment_lens.fs");
 
-    m_vecShaders = {shaderTexture, shaderWave};
+    m_vecShaders = {shaderTexture, shaderWave, shaderClip, shaderCrop, shaderLens};
 
     return true;
 }
@@ -415,10 +418,42 @@ void Debug::EnableDisableShader()
 
     ImGui::Begin("Shaders", &m_bShaders);
 
-    const unsigned int unSizeOfArrShaders = 2;
-    const char* strArrListOfShaders[unSizeOfArrShaders] = {"NONE", "Wave"};
+    const unsigned int unSizeOfArrShaders = m_vecShaders.size();
+    const char* strArrListOfShaders[unSizeOfArrShaders] = {"NONE", "Wave", "Clip", "Crop", "Lens"};
 
     ImGui::ListBox("List of Shaders", &m_nCurrShader, strArrListOfShaders, unSizeOfArrShaders);
+
+    switch (m_nCurrShader)
+    {
+    case eShaderWave:
+    {
+        ImGui::InputFloat("Center wave X", &m_vec4ClipCrop.x, 0.01f);
+        ImGui::InputFloat("Center wave Y", &m_vec4ClipCrop.y, 0.01f);
+        ImGui::InputFloat("Aplitude", &m_vec4ClipCrop.w, 0.01f);
+        ImGui::InputFloat("Speed", &m_vec4ClipCrop.z, 0.01f);
+    }
+        break;
+    case eShaderClip:
+    case eShaderCrop:
+    {
+        ImGui::InputFloat("X", &m_vec4ClipCrop.x, 1.0f);
+        ImGui::InputFloat("Y", &m_vec4ClipCrop.y, 1.0f);
+        ImGui::InputFloat("W", &m_vec4ClipCrop.w, 1.0f);
+        ImGui::InputFloat("H", &m_vec4ClipCrop.z, 1.0f);
+    }
+        break;
+
+    case eShaderLens:
+    {
+        ImGui::InputFloat("X", &m_vec4ClipCrop.x, 0.005f);
+        ImGui::InputFloat("Y", &m_vec4ClipCrop.y, 0.005f);
+        ImGui::InputFloat("Zoom", &m_vec4ClipCrop.w, 0.005f);
+    }
+        break;
+
+    default:
+        break;
+    }
 
     if(ImGui::Button("Apply..."))
     {
@@ -432,6 +467,40 @@ void Debug::EnableDisableShader()
     }
     ImGui::End();
 
+}
+
+void Debug::CurrentShaderEffect(unsigned int nShaderToApply)
+{
+    switch (nShaderToApply)
+    {
+    case eShaderWave:
+    {
+        m_vecShaders.at(nShaderToApply).setFloat("fTime", (float)glfwGetTime());
+        m_vecShaders.at(nShaderToApply).setVec4("vecDatas", m_vec4ClipCrop);
+    }
+        break;
+
+    case eShaderClip:
+    {
+        m_vecShaders.at(nShaderToApply).setVec4("vecClip", m_vec4ClipCrop);
+    }
+        break;
+
+    case eShaderCrop:
+    {
+        m_vecShaders.at(nShaderToApply).setVec4("vecCrop", m_vec4ClipCrop);
+    }
+        break;
+
+    case eShaderLens:
+    {
+        m_vecShaders.at(nShaderToApply).setVec4("vecDatas", m_vec4ClipCrop);
+    }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void Debug::EnableDisableDrag()
@@ -890,11 +959,7 @@ void Debug::Draw()
             gRenderer.DrawRect(fXRect, fYRect, fWRect, fHRect, shaderRect);
         }
 
-        /*Wave Needs Time*/
-        if(objects.unShaderID == 1)
-        {
-            m_vecShaders.at(objects.unShaderID).setFloat("fTime", (float)glfwGetTime());
-        }
+        CurrentShaderEffect(objects.unShaderID);
     }
 
     gRenderer.SetColor(1.0f,1.0f,1.0f,1.0f);
