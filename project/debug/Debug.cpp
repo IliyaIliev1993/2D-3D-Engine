@@ -427,6 +427,13 @@ void Debug::EnableDisableShader()
     {
     case eShaderWave:
     {
+        if(ImGui::Button("Reset Values"))
+        {
+            m_vec4ClipCrop.x = 0.0f;
+            m_vec4ClipCrop.y = 0.0f;
+            m_vec4ClipCrop.w = 1.0f;
+            m_vec4ClipCrop.z = 5.0f;
+        }
         ImGui::InputFloat("Center wave X", &m_vec4ClipCrop.x, 0.01f);
         ImGui::InputFloat("Center wave Y", &m_vec4ClipCrop.y, 0.01f);
         ImGui::InputFloat("Aplitude", &m_vec4ClipCrop.w, 0.01f);
@@ -436,6 +443,13 @@ void Debug::EnableDisableShader()
     case eShaderClip:
     case eShaderCrop:
     {
+        if(ImGui::Button("Reset Values"))
+        {
+            m_vec4ClipCrop.x = 0.0f;
+            m_vec4ClipCrop.y = 0.0f;
+            m_vec4ClipCrop.w = 50.0f;
+            m_vec4ClipCrop.z = 50.0f;
+        }
         ImGui::InputFloat("X", &m_vec4ClipCrop.x, 1.0f);
         ImGui::InputFloat("Y", &m_vec4ClipCrop.y, 1.0f);
         ImGui::InputFloat("W", &m_vec4ClipCrop.w, 1.0f);
@@ -445,6 +459,12 @@ void Debug::EnableDisableShader()
 
     case eShaderLens:
     {
+        if(ImGui::Button("Reset Values"))
+        {
+            m_vec4ClipCrop.x = 0.0f;
+            m_vec4ClipCrop.y = 0.0f;
+            m_vec4ClipCrop.w = 0.5f;
+        }
         ImGui::InputFloat("X", &m_vec4ClipCrop.x, 0.005f);
         ImGui::InputFloat("Y", &m_vec4ClipCrop.y, 0.005f);
         ImGui::InputFloat("Zoom", &m_vec4ClipCrop.w, 0.005f);
